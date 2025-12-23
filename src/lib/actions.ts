@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { addRecord } from './data';
 import { revalidatePath } from 'next/cache';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 
 const VisionTestSchema = z.object({
   leftEyeDist: z.coerce.number().positive({ message: 'Distance must be a positive number.' }).max(500, { message: 'Distance seems too large for this estimation method.'}),
