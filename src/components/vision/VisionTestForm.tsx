@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,7 +66,7 @@ export function VisionTestForm() {
   
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
   
-  const [state, dispatch] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  const [state, dispatch] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
@@ -127,6 +127,7 @@ export function VisionTestForm() {
                     type="number"
                     placeholder="e.g., 25"
                     step="0.1"
+                    value={leftDist}
                     onChange={(e) => setLeftDist(e.target.value)}
                     aria-describedby="left-eye-error"
                     required
@@ -146,6 +147,7 @@ export function VisionTestForm() {
                     type="number"
                     placeholder="e.g., 30"
                     step="0.1"
+                    value={rightDist}
                     onChange={(e) => setRightDist(e.target.value)}
                     aria-describedby="right-eye-error"
                     required
