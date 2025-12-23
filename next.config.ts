@@ -1,5 +1,5 @@
 // Load environment variables from .env files
-require('dotenv').config();
+require('dotenv').config({ path: './.env.local' });
 
 import type {NextConfig} from 'next';
 
