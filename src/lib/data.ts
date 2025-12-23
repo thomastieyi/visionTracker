@@ -3,27 +3,12 @@
 import { Timestamp, getFirestore } from 'firebase-admin/firestore';
 import admin from 'firebase-admin';
 
-// Initialize the app if it's not already initialized
+// Initialize the app if it's not already initialized.
+// In a managed Google Cloud environment, initializeApp() without arguments
+// will automatically use the available service account credentials.
 if (admin.apps.length === 0) {
-    // When running in a Google Cloud environment (like App Hosting), the SDK is auto-initialized.
-    if (process.env.GOOGLE_CLOUD_PROJECT) {
-        admin.initializeApp();
-    } else {
-        const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-        if (!serviceAccountKey) {
-            throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set for local development.');
-        }
-        try {
-            const credentials = JSON.parse(serviceAccountKey);
-            admin.initializeApp({
-                credential: admin.credential.cert(credentials),
-            });
-        } catch (e) {
-            throw new Error('Failed to parse Firebase service account key.');
-        }
-    }
+  admin.initializeApp();
 }
-
 
 const adminDb = getFirestore();
 
@@ -47,10 +32,6 @@ type VisionTestResultPayload = {
 export async function addRecord(userId: string, data: Omit<VisionTestResultPayload, 'id' | 'userId'>) {
   if (!userId) {
     throw new Error("User must be authenticated to add a record.");
-  }
-  
-  if (!adminDb) {
-    throw new Error("Failed to get a valid database instance.");
   }
   
   // Use the admin SDK's collection and doc methods.
