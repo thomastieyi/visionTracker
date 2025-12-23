@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,8 +67,8 @@ export function VisionTestForm() {
   // Bind the userId to the server action
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
   
-  // useFormState for handling form submission state
-  const [state, formAction] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  // useActionState for handling form submission state
+  const [state, formAction] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
   
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -94,8 +94,7 @@ export function VisionTestForm() {
       formRef.current?.reset();
       setLeftDist('');
       setRightDist('');
-      // Manually reset the useFormState to its initial state if needed, though form reset often suffices
-    } else if (state.message) { // Only show error toast if there's a message
+    } else if (state.message && state.errors) { // Only show error toast if there's a message from validation
       toast({
         variant: "destructive",
         title: "Error",
