@@ -1,0 +1,180 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account in the VisionTrack app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user.",
+          "format": "uuid"
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username.",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "createdAt"
+      ]
+    },
+    "VisionTestResult": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VisionTestResult",
+      "type": "object",
+      "description": "Represents a single vision test result recorded by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the vision test result.",
+          "format": "uuid"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who performed the test. (Relationship: User 1:N VisionTestResult)"
+        },
+        "leftEyeDistanceCm": {
+          "type": "number",
+          "description": "Measured distance for the left eye in centimeters."
+        },
+        "rightEyeDistanceCm": {
+          "type": "number",
+          "description": "Measured distance for the right eye in centimeters."
+        },
+        "leftEyeDegree": {
+          "type": "number",
+          "description": "Calculated vision degree for the left eye (100/distance)."
+        },
+        "rightEyeDegree": {
+          "type": "number",
+          "description": "Calculated vision degree for the right eye (100/distance)."
+        },
+        "testedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the test was performed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "leftEyeDistanceCm",
+        "rightEyeDistanceCm",
+        "leftEyeDegree",
+        "rightEyeDegree",
+        "testedAt"
+      ]
+    },
+    "MeasurementTutorial": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MeasurementTutorial",
+      "type": "object",
+      "description": "Represents a measurement tutorial with a step-by-step description and associated image.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the measurement tutorial step.",
+          "format": "uuid"
+        },
+        "stepNumber": {
+          "type": "number",
+          "description": "The order of the tutorial step."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the measurement tutorial step."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image associated with the tutorial step.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "stepNumber",
+        "description",
+        "imageUrl"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.  The `userId` is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/visionTestResults/{visionTestResultId}",
+        "definition": {
+          "entityName": "VisionTestResult",
+          "schema": {
+            "$ref": "#/backend/entities/VisionTestResult"
+          },
+          "description": "Stores vision test results for each user. Path-based ownership is enforced through the `/users/{userId}` path.  No denormalization required as ownership is implicit in the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "visionTestResultId",
+              "description": "The unique identifier for the vision test result."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/measurementTutorials/{measurementTutorialId}",
+        "definition": {
+          "entityName": "MeasurementTutorial",
+          "schema": {
+            "$ref": "#/backend/entities/MeasurementTutorial"
+          },
+          "description": "Stores measurement tutorial steps. Accessible to all users. No specific authorization requirements.",
+          "params": [
+            {
+              "name": "measurementTutorialId",
+              "description": "The unique identifier for the measurement tutorial step."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure authorization independence, clarity, and scalability for the VisionTrack application. We leverage path-based ownership for user data and measurement tutorials, enhancing security and simplifying rules. The key is to use hierarchical paths for user-owned data to eliminate the need for `get()` calls in security rules.\n\n1.  **User Data:** User profiles are stored in a dedicated collection (`/users/{userId}`), ensuring clear ownership and easy management.\n2.  **Vision Test Results:** Vision test results are stored as subcollections under each user's document (`/users/{userId}/visionTestResults/{visionTestResultId}`). This structure enforces ownership by path, ensuring that only the user can access their own test results.\n3.  **Measurement Tutorials:** Measurement tutorials are stored in a top-level collection (`/measurementTutorials/{measurementTutorialId}`).  These are global and accessible to all users, so no user-specific data is stored here.\n\nThis design achieves Authorization Independence by structuring data in a way that security rules can rely solely on the `request.auth.uid` and the document path, without needing to fetch data from parent documents.  QAPs are supported because listing operations are scoped to user-owned data, preventing unauthorized access to other users' information. The structure inherently supports the integrity of ownership and timestamps, as the paths clearly define the relationship between users and their data."
+  }
+}

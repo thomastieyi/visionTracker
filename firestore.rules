@@ -1,0 +1,160 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model. All user-specific data,
+ * such as profiles and vision test results, is private and can only be accessed by the
+ * authenticated owner. Publicly accessible, read-only content like tutorials is stored in a
+ * separate top-level collection. The default security posture is deny-all, with access
+ * granted explicitly.
+ *
+ * Data Structure: The data is organized hierarchically to leverage Firestore's path-based
+ * security. Each user's data is nested under a document in the `/users/{userId}` path.
+ * This includes their profile and subcollections like `/visionTestResults`. This structure
+ * creates a clear and secure boundary for each user's data.
+ *
+ * Key Security Decisions:
+ * - User Isolation: Users are strictly confined to their own data tree (`/users/{userId}`).
+ * - No User Listing: To protect user privacy, listing the top-level `/users` collection is disallowed.
+ * - Read-Only Public Data: The `/measurementTutorials` collection is readable by anyone
+ *   (including unauthenticated users) but is locked for all client-side write operations to
+ *   prevent unauthorized modifications. It is assumed this content is managed by administrators.
+ * - Denormalization for Authorization: This ruleset relies on path-based authorization, which is
+ *   highly performant. For creating user-owned documents, we enforce that an internal ID field
+ *   (e.g., `userId` or `id`) matches the `userId` in the path to ensure relational integrity from the start.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * isSignedIn
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * isOwner
+     * Checks if the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * isExistingDoc
+     * Checks if a document currently exists. Used for update and delete operations.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    /**
+     * isExistingOwner
+     * A convenience function that combines isOwner and isExistingDoc for robust
+     * update/delete authorization checks on owned documents.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && isExistingDoc();
+    }
+    
+    /**
+     * newUserDataIsValid
+     * On create, ensures the document's internal `id` matches the user's auth UID.
+     */
+    function newUserDataIsValid(userId) {
+        return request.resource.data.id == userId;
+    }
+
+    /**
+     * updatedUserDataIsImmutable
+     * On update, ensures the document's internal `id` cannot be changed.
+     */
+    function updatedUserDataIsImmutable() {
+        return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * newVisionTestResultDataIsValid
+     * On create, ensures the new test result is correctly linked to the user path.
+     */
+    function newVisionTestResultDataIsValid(userId) {
+      return request.resource.data.userId == userId;
+    }
+    
+    /**
+     * updatedVisionTestResultDataIsImmutable
+     * On update, ensures the link to the parent user cannot be changed.
+     */
+    function updatedVisionTestResultDataIsImmutable() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    // ----------------------------------------------------------------------
+    // User Profile Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Manages a user's own profile document.
+     * @path /users/{userId}
+     * @allow (get) An authenticated user reads their own profile: `auth.uid == 'user_abc'`, `get /users/user_abc`
+     * @allow (create) An authenticated user creates their own profile: `auth.uid == 'user_abc'`, `create /users/user_abc`
+     * @deny (list) No user can list all user profiles in the database.
+     * @deny (get) A user tries to read another user's profile: `auth.uid == 'user_abc'`, `get /users/user_xyz`
+     * @principle Restricts access to a user's own data tree and enforces self-creation.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && newUserDataIsValid(userId);
+      allow update: if isExistingOwner(userId) && updatedUserDataIsImmutable();
+      allow delete: if isExistingOwner(userId);
+
+      // --------------------------------------------------------------------
+      // User Vision Test Results Subcollection Rules
+      // --------------------------------------------------------------------
+      
+      /**
+       * @description Manages a user's private vision test results.
+       * @path /users/{userId}/visionTestResults/{visionTestResultId}
+       * @allow (list) An authenticated user lists their own vision tests: `auth.uid == 'user_abc'`, `list /users/user_abc/visionTestResults`
+       * @allow (create) An authenticated user adds a new vision test: `auth.uid == 'user_abc'`, `create /users/user_abc/visionTestResults/test_123`
+       * @deny (get) A user tries to read another user's vision test: `auth.uid == 'user_abc'`, `get /users/user_xyz/visionTestResults/test_456`
+       * @deny (create) A user tries to add a test result under another user's profile.
+       * @principle Enforces strict ownership for all operations within a user's private subcollection.
+       */
+      match /visionTestResults/{visionTestResultId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && newVisionTestResultDataIsValid(userId);
+        allow update: if isExistingOwner(userId) && updatedVisionTestResultDataIsImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    // ----------------------------------------------------------------------
+    // Measurement Tutorial Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Provides public, read-only access to measurement tutorials.
+     * @path /measurementTutorials/{measurementTutorialId}
+     * @allow (get) Any user, including unauthenticated ones, can read a tutorial.
+     * @allow (list) Any user, including unauthenticated ones, can list all tutorials.
+     * @deny (create) All client-side write operations are denied to protect the data.
+     * @deny (update) An authenticated user tries to modify a tutorial.
+     * @deny (delete) An authenticated user tries to delete a tutorial.
+     * @principle Secures global, static content by making it publicly readable but not client-writable.
+     */
+    match /measurementTutorials/{measurementTutorialId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
