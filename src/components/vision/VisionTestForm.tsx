@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,7 +66,7 @@ export function VisionTestForm() {
   
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
   
-  const [state, dispatch] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  const [state, dispatch] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
