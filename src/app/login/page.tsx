@@ -7,13 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useUser, loginWithGoogle } from '@/firebase/auth/use-user';
+import { useUser } from '@/firebase';
+import { initiateGoogleSignIn } from '@/firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useAuth } from '@/firebase';
 
 export default function LoginPage() {
-  const { data: user, isLoading } = useUser();
+  const { user, isUserLoading: isLoading } = useUser();
   const router = useRouter();
+  const auth = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -21,9 +24,9 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     try {
-      await loginWithGoogle();
+      initiateGoogleSignIn(auth);
     } catch (error) {
       console.error('Login failed:', error);
     }

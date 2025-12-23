@@ -1,9 +1,8 @@
 'use server';
 
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { getFirestore } from 'firebase-admin/firestore';
+import { collection, serverTimestamp, setDoc, doc } from 'firebase/firestore';
 import type { VisionRecord } from './types';
-import { adminApp } from '@/firebase/admin';
+import { adminDb } from '@/firebase/admin';
 
 
 // This file now interacts with Firestore for data persistence.
@@ -18,10 +17,10 @@ export async function addRecord(userId: string, data: Omit<VisionRecord, 'id' | 
     throw new Error("User must be authenticated to add a record.");
   }
   
-  const firestore = getFirestore(adminApp);
-  const recordsCollection = collection(firestore, 'users', userId, 'records');
+  const recordsCollection = collection(adminDb, 'users', userId, 'records');
+  const newRecordRef = doc(recordsCollection);
 
-  await addDoc(recordsCollection, {
+  await setDoc(newRecordRef, {
     ...data,
     measuredAt: serverTimestamp(),
   });

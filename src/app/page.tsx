@@ -4,7 +4,7 @@ import { HistoryTable } from '@/components/vision/HistoryTable';
 import { Suspense } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUser } from '@/firebase/auth/use-user';
+import { useUser } from '@/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -42,7 +42,7 @@ function WelcomeMessage() {
 }
 
 export default function Home() {
-  const { data: user, isLoading } = useUser();
+  const { user, isUserLoading: isLoading } = useUser();
 
   if (isLoading) {
     return (

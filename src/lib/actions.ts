@@ -45,6 +45,7 @@ export async function createVisionRecord(userId: string, prevState: FormState, f
             rightEyeDegree,
         });
     } catch (error) {
+        console.error("Firebase Admin Error:", error);
         // In a real app, you'd want to inspect the error.
         // For now, we'll keep it simple.
         return {

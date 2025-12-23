@@ -4,15 +4,12 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { initializeFirebase } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'VisionTrack',
   description: 'A personal vision self-assessment and tracking app.',
 };
-
-const { app } = initializeFirebase();
 
 export default function RootLayout({
   children,
