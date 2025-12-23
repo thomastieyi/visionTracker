@@ -25,21 +25,36 @@ function SubmitButton() {
 }
 
 function EyeChart() {
+    const chartLines = [
+        { text: 'E', size: 'text-5xl', weight: 'font-bold' },
+        { text: 'FP', size: 'text-4xl', weight: 'font-bold' },
+        { text: 'TOZ', size: 'text-3xl', weight: 'font-bold' },
+        { text: 'LPED', size: 'text-2xl', weight: 'font-semibold' },
+        { text: 'PECFD', size: 'text-xl', weight: 'font-semibold' },
+        { text: 'EDFCZP', size: 'text-lg', weight: 'font-medium' },
+        { text: 'FELOPZD', size: 'text-base', weight: 'font-medium' },
+        { text: 'DEFPOTEC', size: 'text-sm', weight: 'font-normal' },
+        { text: 'LEFODPCT', size: 'text-xs', weight: 'font-normal' },
+        { text: 'TCEHYIUR', size: 'text-[10px]', weight: 'font-normal' },
+    ];
     return (
-        <div className="flex flex-col items-center justify-center p-4 border-dashed border-2 rounded-lg h-full space-y-4 bg-secondary/50">
-             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-16 h-16">
+        <div className="flex flex-col items-center justify-center p-4 border-dashed border-2 rounded-lg h-full space-y-3 bg-secondary/50">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-12 h-12 mb-2">
                 <path d="M80 20H20v15h45v10H20v10h45v10H20v10h45v15H20V20z" />
             </svg>
-            <div className="text-center w-full space-y-2">
-                <p className="text-2xl font-bold">VisionTrack</p>
-                <p className="text-xl">Focus here</p>
-                <p className="text-lg">Read this line</p>
-                <p className="text-base">Can you see this?</p>
-                <p className="text-sm">How about this one?</p>
-                <p className="text-xs">And this tiny text?</p>
+            <div className="w-full space-y-1.5 flex-grow flex flex-col justify-center">
+                {chartLines.map((line, index) => (
+                    <div key={index} className="flex items-center gap-4 w-full">
+                        <span className="text-xs w-5 text-right text-muted-foreground font-mono">{index + 1}</span>
+                        <div className="flex-1 text-center tracking-widest">
+                            <p className={`${line.size} ${line.weight}`}>{line.text}</p>
+                        </div>
+                        <span className="text-xs w-5"></span>
+                    </div>
+                ))}
             </div>
-            <Separator />
-             <p className="text-xs text-muted-foreground text-center">Move phone until text is sharp.</p>
+            <Separator className="my-2" />
+            <p className="text-xs text-muted-foreground text-center">将手机移近或移远，直到某行文字变得清晰。</p>
         </div>
     )
 }
