@@ -40,7 +40,6 @@ export async function createVisionRecord(userId: string, prevState: FormState, f
 
     try {
         const newRecord = {
-          userId,
           leftEyeDistanceCm: leftEyeDist,
           rightEyeDistanceCm: rightEyeDist,
           leftEyeDegree: leftEyeDegree,

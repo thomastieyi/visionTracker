@@ -1,6 +1,6 @@
 'use server';
 
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { getAdminDb } from '@/firebase/admin';
 
 type VisionTestResultPayload = {
@@ -9,7 +9,7 @@ type VisionTestResultPayload = {
   rightEyeDistanceCm: number;
   leftEyeDegree: number;
   rightEyeDegree: number;
-  testedAt: FirebaseFirestore.Timestamp;
+  testedAt: Timestamp;
 };
 
 
@@ -17,17 +17,25 @@ type VisionTestResultPayload = {
  * Adds a new vision record to the specified user's subcollection in Firestore.
  * This is a server-side action.
  */
-export async function addRecord(userId: string, data: Omit<VisionTestResultPayload, 'id'>): Promise<void> {
+export async function addRecord(userId: string, data: Omit<VisionTestResultPayload, 'id' | 'userId'>): Promise<void> {
   if (!userId) {
     throw new Error("User must be authenticated to add a record.");
   }
   
   const adminDb = await getAdminDb();
+  if (!adminDb) {
+    throw new Error("Failed to get a valid database instance.");
+  }
+  
   const recordsCollection = collection(adminDb, 'users', userId, 'visionTestResults');
   const newRecordRef = doc(recordsCollection);
 
-  await setDoc(newRecordRef, {
+  const fullData: VisionTestResultPayload = {
     id: newRecordRef.id, // Add the generated ID to the document data
-    ...data,
-  });
+    userId: userId,
+
+    ...data
+  };
+
+  await setDoc(newRecordRef, fullData);
 }
