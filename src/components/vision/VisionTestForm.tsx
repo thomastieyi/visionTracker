@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormState } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
 import { createVisionRecord, type FormState } from '@/lib/actions';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -59,7 +57,7 @@ export function VisionTestForm() {
   const { toast } = useToast();
   
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
-  const [state, formAction] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  const [state, formAction] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
   
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -70,8 +68,6 @@ export function VisionTestForm() {
         description: state.message,
       });
       formRef.current?.reset();
-      // Manually clear controlled components if reset() doesn't suffice for them in some React versions
-      // This part can be removed if formRef.current.reset() works fine.
     } else if (state.message && (state.errors && Object.keys(state.errors).length > 0)) {
       toast({
         variant: "destructive",

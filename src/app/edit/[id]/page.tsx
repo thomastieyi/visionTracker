@@ -1,9 +1,8 @@
 'use client';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { updateVisionRecord, type FormState } from '@/lib/actions';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -81,7 +80,7 @@ export default function EditRecordPage({ params }: { params: { id: string } }) {
   const { data: record, isLoading } = useDoc(recordRef);
 
   const updateRecordWithIds = updateVisionRecord.bind(null, params.id, userId || '');
-  const [state, dispatch] = useFormState(updateRecordWithIds, initialState);
+  const [state, dispatch] = useActionState(updateRecordWithIds, initialState);
 
   if (isLoading || !userId) {
     return (
