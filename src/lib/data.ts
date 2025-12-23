@@ -1,7 +1,7 @@
 'use server';
 
 import { collection, doc, setDoc } from 'firebase/firestore';
-import { adminDb } from '@/firebase/admin';
+import { getAdminDb } from '@/firebase/admin';
 
 type VisionTestResultPayload = {
   userId: string;
@@ -22,6 +22,7 @@ export async function addRecord(userId: string, data: Omit<VisionTestResultPaylo
     throw new Error("User must be authenticated to add a record.");
   }
   
+  const adminDb = await getAdminDb();
   const recordsCollection = collection(adminDb, 'users', userId, 'visionTestResults');
   const newRecordRef = doc(recordsCollection);
 
