@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ function SubmitButton() {
 export function VisionTestForm({ userId }: { userId: string }) {
   const { toast } = useToast();
   const createVisionRecordWithUserId = createVisionRecord.bind(null, userId);
-  const [state, dispatch] = useFormState(createVisionRecordWithUserId, initialState);
+  const [state, dispatch] = useActionState(createVisionRecordWithUserId, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
