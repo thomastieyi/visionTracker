@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,9 +64,12 @@ export function VisionTestForm() {
   const userId = user?.uid;
   const { toast } = useToast();
   
+  // Bind the userId to the server action
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
   
-  const [state, dispatch] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  // useFormState for handling form submission state
+  const [state, formAction] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
@@ -83,25 +86,27 @@ export function VisionTestForm() {
 
   useEffect(() => {
     if (state.success) {
-        if(state.message) {
-            toast({
-                title: "Success",
-                description: state.message,
-            });
-        }
+      toast({
+        title: "Success",
+        description: state.message,
+      });
+      // Reset form fields and state
       formRef.current?.reset();
       setLeftDist('');
       setRightDist('');
-    } else if (state.message) {
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: state.message,
-        });
+      // Manually reset the useFormState to its initial state if needed, though form reset often suffices
+    } else if (state.message) { // Only show error toast if there's a message
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: state.message,
+      });
     }
   }, [state, toast]);
   
   if (!createVisionRecordWithUserId) {
+    // This can happen briefly while the user is loading.
+    // Or if the user is logged out. The parent component already handles the logged out case.
     return null;
   }
 
@@ -116,7 +121,7 @@ export function VisionTestForm() {
           Enter the furthest distance (in cm) at which you can see an object clearly. The calculated 'degree' is based on the formula: 100 / distance.
         </CardDescription>
       </CardHeader>
-      <form ref={formRef} action={dispatch}>
+      <form ref={formRef} action={formAction}>
         <CardContent className="grid md:grid-cols-2 gap-6">
             <div className="space-y-6">
                  <div className="space-y-2">
