@@ -1,7 +1,7 @@
 'use server';
 
 import { Timestamp } from 'firebase-admin/firestore';
-import { getAdminDb } from '@/firebase/admin';
+import { adminDb } from '@/firebase/admin';
 
 // This type should match the structure of the data you intend to save.
 // It uses the admin Timestamp.
@@ -25,8 +25,6 @@ export async function addRecord(userId: string, data: Omit<VisionTestResultPaylo
     throw new Error("User must be authenticated to add a record.");
   }
   
-  // Always await the admin DB instance to ensure it's initialized.
-  const adminDb = await getAdminDb();
   if (!adminDb) {
     throw new Error("Failed to get a valid database instance.");
   }

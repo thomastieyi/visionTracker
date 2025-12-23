@@ -1,3 +1,5 @@
+'use server';
+
 import admin from 'firebase-admin';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth, Auth } from 'firebase-admin/auth';
@@ -39,22 +41,5 @@ function initializeAdminApp() {
 const adminApp = initializeAdminApp();
 
 // Create the db and auth instances once.
-const adminDb: Firestore = getFirestore(adminApp);
-const adminAuth: Auth = getAuth(adminApp);
-
-
-/**
- * Gets the initialized Firestore Admin instance.
- * @returns {Firestore} The Firestore instance.
- */
-export function getAdminDb(): Firestore {
-  return adminDb;
-}
-
-/**
- * Gets the initialized Firebase Auth Admin instance.
- * @returns {Auth} The Auth instance.
- */
-export function getAdminAuth(): Auth {
-  return adminAuth;
-}
+export const adminDb: Firestore = getFirestore(adminApp);
+export const adminAuth: Auth = getAuth(adminApp);
