@@ -152,7 +152,7 @@ export default function EditRecordPage() {
 
             <div className="space-y-2">
               <Label htmlFor="chartLine">Chart Line Used</Label>
-              <Select name="chartLine" defaultValue={record.chartLine.toString()} required>
+              <Select name="chartLine" defaultValue={record.chartLine?.toString() ?? ''} required>
                 <SelectTrigger id="chartLine">
                   <SelectValue placeholder="Select a line" />
                 </SelectTrigger>
