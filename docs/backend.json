@@ -65,6 +65,14 @@
           "type": "number",
           "description": "Calculated vision degree for the right eye (100/distance)."
         },
+        "chartLine": {
+            "type": "number",
+            "description": "The line number on the eye chart used for the test."
+        },
+        "notes": {
+            "type": "string",
+            "description": "Optional notes or remarks about the test."
+        },
         "testedAt": {
           "type": "string",
           "description": "Timestamp indicating when the test was performed.",
@@ -78,6 +86,7 @@
         "rightEyeDistanceCm",
         "leftEyeDegree",
         "rightEyeDegree",
+        "chartLine",
         "testedAt"
       ]
     },

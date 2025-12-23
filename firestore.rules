@@ -86,11 +86,14 @@ service cloud.firestore {
     }
     
     /**
-     * updatedVisionTestResultDataIsImmutable
-     * On update, ensures the link to the parent user cannot be changed.
+     * updatedVisionTestResultDataIsValid
+     * On update, ensures core immutable fields are not changed.
      */
-    function updatedVisionTestResultDataIsImmutable() {
-      return request.resource.data.userId == resource.data.userId;
+    function updatedVisionTestResultDataIsValid() {
+      let isImmutable = request.resource.data.userId == resource.data.userId
+                        && request.resource.data.id == resource.data.id
+                        && request.resource.data.testedAt == resource.data.testedAt;
+      return isImmutable;
     }
 
     // ----------------------------------------------------------------------
@@ -130,7 +133,7 @@ service cloud.firestore {
         allow get: if isOwner(userId);
         allow list: if isOwner(userId);
         allow create: if isOwner(userId) && newVisionTestResultDataIsValid(userId);
-        allow update: if isExistingOwner(userId) && updatedVisionTestResultDataIsImmutable();
+        allow update: if isExistingOwner(userId) && updatedVisionTestResultDataIsValid();
         allow delete: if isExistingOwner(userId);
       }
     }

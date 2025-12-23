@@ -2,11 +2,13 @@ import { Timestamp } from 'firebase/firestore';
 
 export type VisionRecord = {
   id: string;
-  leftEyeDist: number;
-  rightEyeDist: number;
+  leftEyeDistanceCm: number;
+  rightEyeDistanceCm: number;
   leftEyeDegree: number;
   rightEyeDegree: number;
-  measuredAt: Date | Timestamp;
+  chartLine: number;
+  notes?: string;
+  testedAt: Date | Timestamp;
 };
 
 export type UserProfile = {

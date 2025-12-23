@@ -1,28 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef, useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useRef } from 'react';
+import { useFormState } from 'react-dom';
 import { createVisionRecord, type FormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Eye, PlusCircle, Loader2 } from 'lucide-react';
+import { Eye, PlusCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from '@/firebase';
 import { Separator } from '../ui/separator';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { SubmitButton } from '../SubmitButton';
 
-const initialState: FormState = { message: null, errors: {}, success: false };
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-      Add Record
-    </Button>
-  );
-}
 
 function EyeChart() {
     const chartLines = [
@@ -59,30 +51,17 @@ function EyeChart() {
     )
 }
 
+const initialState: FormState = { message: null, errors: {}, success: false };
+
 export function VisionTestForm() {
   const { user } = useUser();
   const userId = user?.uid;
   const { toast } = useToast();
   
-  // Bind the userId to the server action
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
-  
-  // useActionState for handling form submission state
-  const [state, formAction] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
+  const [state, formAction] = useFormState(createVisionRecordWithUserId || (async () => initialState), initialState);
   
   const formRef = useRef<HTMLFormElement>(null);
-
-  const [leftDist, setLeftDist] = useState<number | string>('');
-  const [rightDist, setRightDist] = useState<number | string>('');
-
-  const calculateDegree = (dist: number | string) => {
-    const numDist = Number(dist);
-    if (numDist > 0 && numDist <= 500) {
-      return (100 / numDist).toFixed(2);
-    }
-    if (numDist > 500) return '~0 (No Myopia)';
-    return '-';
-  };
 
   useEffect(() => {
     if (state.success) {
@@ -90,11 +69,10 @@ export function VisionTestForm() {
         title: "Success",
         description: state.message,
       });
-      // Reset form fields and state
       formRef.current?.reset();
-      setLeftDist('');
-      setRightDist('');
-    } else if (state.message && state.errors) { // Only show error toast if there's a message from validation
+      // Manually clear controlled components if reset() doesn't suffice for them in some React versions
+      // This part can be removed if formRef.current.reset() works fine.
+    } else if (state.message && (state.errors && Object.keys(state.errors).length > 0)) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -104,8 +82,6 @@ export function VisionTestForm() {
   }, [state, toast]);
   
   if (!createVisionRecordWithUserId) {
-    // This can happen briefly while the user is loading.
-    // Or if the user is logged out. The parent component already handles the logged out case.
     return null;
   }
 
@@ -122,52 +98,65 @@ export function VisionTestForm() {
       </CardHeader>
       <form ref={formRef} action={formAction}>
         <CardContent className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-                 <div className="space-y-2">
-                    <Label htmlFor="leftEyeDist">Left Eye Distance (cm)</Label>
-                    <Input
-                    id="leftEyeDist"
-                    name="leftEyeDist"
-                    type="number"
-                    placeholder="e.g., 25"
-                    step="0.1"
-                    value={leftDist}
-                    onChange={(e) => setLeftDist(e.target.value)}
-                    aria-describedby="left-eye-error"
-                    required
-                    />
-                    <p className="text-sm text-muted-foreground">
-                    Calculated Degree: <span className="font-bold text-primary">{calculateDegree(leftDist)}</span>
-                    </p>
-                    {state.errors?.leftEyeDist && (
-                    <p id="left-eye-error" className="text-sm font-medium text-destructive">{state.errors.leftEyeDist[0]}</p>
-                    )}
-                </div>
+            <div className="space-y-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="leftEyeDist">Left Eye (cm)</Label>
+                        <Input
+                            id="leftEyeDist"
+                            name="leftEyeDist"
+                            type="number"
+                            placeholder="e.g., 25"
+                            step="0.1"
+                            aria-describedby="left-eye-error"
+                            required
+                        />
+                        {state.errors?.leftEyeDist && <p id="left-eye-error" className="text-sm font-medium text-destructive">{state.errors.leftEyeDist[0]}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="rightEyeDist">Right Eye (cm)</Label>
+                        <Input
+                            id="rightEyeDist"
+                            name="rightEyeDist"
+                            type="number"
+                            placeholder="e.g., 30"
+                            step="0.1"
+                            aria-describedby="right-eye-error"
+                            required
+                        />
+                         {state.errors?.rightEyeDist && <p id="right-eye-error" className="text-sm font-medium text-destructive">{state.errors.rightEyeDist[0]}</p>}
+                    </div>
+                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="rightEyeDist">Right Eye Distance (cm)</Label>
-                    <Input
-                    id="rightEyeDist"
-                    name="rightEyeDist"
-                    type="number"
-                    placeholder="e.g., 30"
-                    step="0.1"
-                    value={rightDist}
-                    onChange={(e) => setRightDist(e.target.value)}
-                    aria-describedby="right-eye-error"
-                    required
+                    <Label htmlFor="chartLine">Chart Line Used</Label>
+                    <Select name="chartLine" required defaultValue="8">
+                        <SelectTrigger id="chartLine" aria-describedby="chart-line-error">
+                            <SelectValue placeholder="Select a line" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {[...Array(10)].map((_, i) => (
+                                <SelectItem key={i+1} value={(i+1).toString()}>Line {i+1}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                     {state.errors?.chartLine && <p id="chart-line-error" className="text-sm font-medium text-destructive">{state.errors.chartLine[0]}</p>}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="notes">Notes (Optional)</Label>
+                    <Textarea
+                        id="notes"
+                        name="notes"
+                        placeholder="Any comments, e.g., 'feeling tired', 'with new glasses'"
+                        aria-describedby="notes-error"
                     />
-                    <p className="text-sm text-muted-foreground">
-                    Calculated Degree: <span className="font-bold text-primary">{calculateDegree(rightDist)}</span>
-                    </p>
-                    {state.errors?.rightEyeDist && (
-                    <p id="right-eye-error" className="text-sm font-medium text-destructive">{state.errors.rightEyeDist[0]}</p>
-                    )}
+                    {state.errors?.notes && <p id="notes-error" className="text-sm font-medium text-destructive">{state.errors.notes[0]}</p>}
                 </div>
             </div>
             <EyeChart />
         </CardContent>
         <CardFooter>
-          <SubmitButton />
+          <SubmitButton icon={<PlusCircle/>} text="Add Record" />
         </CardFooter>
       </form>
     </Card>
