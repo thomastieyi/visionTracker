@@ -1,32 +1,10 @@
 'use client';
 import {
   Auth,
-  GoogleAuthProvider,
-  signInWithPopup,
   signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { errorEmitter } from './error-emitter';
-
-/**
- * Initiates the Google Sign-In flow using a popup.
- * This is a non-blocking function. It triggers the popup and allows the UI to remain responsive.
- * Auth state changes are handled by the global onAuthStateChanged listener in the FirebaseProvider.
- *
- * @param authInstance - The Firebase Auth instance.
- */
-export function initiateGoogleSignIn(authInstance: Auth): void {
-  const provider = new GoogleAuthProvider();
-  // The signInWithPopup promise is intentionally not awaited here.
-  // This makes the function non-blocking. The onAuthStateChanged listener
-  // will handle the result of the authentication attempt.
-  signInWithPopup(authInstance, provider).catch((error) => {
-    // Although we're not blocking, we should still handle potential immediate errors,
-    // like a user closing the popup or network issues.
-    // For this app, we'll log it, but you could also emit a global error event.
-    console.error('Google Sign-In popup error:', error);
-    // You could potentially emit a specific 'login-failed' event here if needed.
-  });
-}
 
 /**
  * Initiates the user logout process.
@@ -44,4 +22,26 @@ export function initiateLogout(authInstance: Auth): void {
     console.error('Logout failed:', error);
     // You could emit a global 'logout-failed' event here for the UI to handle.
   });
+}
+
+/**
+ * Signs in a user with email and password.
+ * This is a blocking function, it will return a promise that resolves when the user is signed in.
+ * @param authInstance The Firebase Auth instance.
+ * @param email The user's email.
+ * @param password The user's password.
+ */
+export async function initiateEmailSignIn(authInstance: Auth, email: string, password: string) {
+  return signInWithEmailAndPassword(authInstance, email, password);
+}
+
+/**
+ * Creates a new user with email and password.
+ * This is a blocking function, it will return a promise that resolves when the user is created.
+ * @param authInstance The Firebase Auth instance.
+ * @param email The user's email.
+ * @param password The user's password.
+ */
+export async function initiateEmailSignUp(authInstance: Auth, email: string, password: string) {
+  return createUserWithEmailAndPassword(authInstance, email, password);
 }
