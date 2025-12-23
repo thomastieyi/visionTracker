@@ -48,10 +48,10 @@ export async function createVisionRecord(userId: string, prevState: FormState, f
           testedAt: Timestamp.now(),
         };
         await addRecord(userId, newRecord);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Firebase Admin Error:", error);
         return {
-            message: 'Database Error: Failed to create record.',
+            message: error.message || 'Database Error: Failed to create record.',
             success: false,
         };
     }
