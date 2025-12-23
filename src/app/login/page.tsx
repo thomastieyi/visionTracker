@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUser, useAuth } from '@/firebase';
-import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -45,14 +45,16 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       if (action === 'signIn') {
-        await initiateEmailSignIn(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await initiateEmailSignUp(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, password);
       }
       // The onAuthStateChanged listener in the provider will handle the redirect
+      // after successful sign-in/sign-up
+      router.push('/');
     } catch (error: any) {
       let message = '发生未知错误。';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         message = '邮箱或密码不正确。'
       } else if (error.code === 'auth/email-already-in-use') {
         message = '该邮箱已被注册。'
@@ -72,7 +74,7 @@ export default function LoginPage() {
   if (isUserLoading || user) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <p>加载中...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -102,6 +104,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
                 />
               </div>
               <div className="space-y-2">
@@ -112,6 +115,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signIn')}
                 />
               </div>
             </CardContent>
@@ -141,6 +145,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signUp')}
                 />
               </div>
               <div className="space-y-2">
@@ -151,6 +156,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAuthAction('signUp')}
                 />
               </div>
             </CardContent>

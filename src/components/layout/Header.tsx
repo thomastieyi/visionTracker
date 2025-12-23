@@ -3,7 +3,6 @@
 import { Leaf, LogIn, LogOut, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
-import { initiateLogout } from '@/firebase/auth';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -16,15 +15,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 function UserNav() {
   const { user } = useUser();
   const router = useRouter();
   const auth = useAuth();
 
-  const handleLogout = () => {
-    initiateLogout(auth);
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   if (!user) {
