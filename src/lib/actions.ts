@@ -44,7 +44,7 @@ export async function createVisionRecord(userId: string, prevState: FormState, f
           rightEyeDistanceCm: rightEyeDist,
           leftEyeDegree: leftEyeDegree,
           rightEyeDegree: rightEyeDegree,
-          testedAt: Timestamp.now(),
+          testedAt: Timestamp.now(), // Use Timestamp from firebase-admin
         };
         await addRecord(userId, newRecord);
     } catch (error: any) {

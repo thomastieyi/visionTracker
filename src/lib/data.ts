@@ -3,6 +3,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { getAdminDb } from '@/firebase/admin';
 
+// This type should match the structure of the data you intend to save.
+// It uses the admin Timestamp.
 type VisionTestResultPayload = {
   id: string;
   userId: string;
@@ -23,11 +25,13 @@ export async function addRecord(userId: string, data: Omit<VisionTestResultPaylo
     throw new Error("User must be authenticated to add a record.");
   }
   
+  // Always await the admin DB instance to ensure it's initialized.
   const adminDb = await getAdminDb();
   if (!adminDb) {
     throw new Error("Failed to get a valid database instance.");
   }
   
+  // Use the admin SDK's collection and doc methods.
   const recordsCollectionRef = adminDb.collection('users').doc(userId).collection('visionTestResults');
   const newRecordRef = recordsCollectionRef.doc();
 
@@ -37,7 +41,9 @@ export async function addRecord(userId: string, data: Omit<VisionTestResultPaylo
     ...data
   };
 
+  // The set operation is what writes to the database.
   await newRecordRef.set(fullData);
+
   // Explicitly return to signal completion of the async function.
   return;
 }
