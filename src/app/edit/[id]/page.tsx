@@ -4,6 +4,7 @@ import { updateVisionRecord, type FormState } from '@/lib/actions';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,19 +68,21 @@ function EditFormSkeleton() {
     )
 }
 
-export default function EditRecordPage({ params }: { params: { id: string } }) {
+export default function EditRecordPage() {
+  const params = useParams<{ id: string }>();
+  const id = params.id;
   const { user } = useUser();
   const userId = user?.uid;
   const firestore = useFirestore();
 
   const recordRef = useMemoFirebase(() => {
-    if (!firestore || !userId || !params.id) return null;
-    return doc(firestore, 'users', userId, 'visionTestResults', params.id);
-  }, [firestore, userId, params.id]);
+    if (!firestore || !userId || !id) return null;
+    return doc(firestore, 'users', userId, 'visionTestResults', id);
+  }, [firestore, userId, id]);
 
   const { data: record, isLoading } = useDoc(recordRef);
 
-  const updateRecordWithIds = updateVisionRecord.bind(null, params.id, userId || '');
+  const updateRecordWithIds = updateVisionRecord.bind(null, id, userId || '');
   const [state, dispatch] = useActionState(updateRecordWithIds, initialState);
 
   if (isLoading || !userId) {
