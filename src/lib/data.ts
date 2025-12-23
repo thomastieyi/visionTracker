@@ -2,14 +2,34 @@
 
 import { Timestamp, getFirestore } from 'firebase-admin/firestore';
 import admin from 'firebase-admin';
+import { firebaseConfig } from '@/firebase/config';
 
 // This function initializes and returns the Firebase Admin App.
 // It ensures that initialization only happens once.
 function initializeAdminApp() {
+  // If the app is already initialized, return the existing app.
   if (admin.apps.length > 0) {
     return admin.app();
   }
-  return admin.initializeApp();
+
+  // For self-hosted or local environments, use a service account key.
+  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (!serviceAccountKey) {
+    // If running in a Google Cloud environment, it should auto-initialize.
+    return admin.initializeApp();
+  }
+
+  try {
+    const credentials = JSON.parse(serviceAccountKey);
+    // When using a service account, explicitly provide the project ID.
+    return admin.initializeApp({
+      credential: admin.credential.cert(credentials),
+      projectId: firebaseConfig.projectId,
+    });
+  } catch (error: any) {
+    console.error('Error parsing FIREBASE_SERVICE_ACCOUNT_KEY or initializing Firebase Admin:', error.message);
+    throw new Error('Failed to initialize Firebase Admin SDK. Ensure the service account key is a valid JSON string.');
+  }
 }
 
 // Initialize the app once at the module level.
