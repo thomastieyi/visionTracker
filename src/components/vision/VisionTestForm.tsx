@@ -9,8 +9,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Eye, PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"
-import { cn } from '@/lib/utils';
-
 
 const initialState: FormState = { message: null, errors: {}, success: false };
 
@@ -24,9 +22,10 @@ function SubmitButton() {
   );
 }
 
-export function VisionTestForm() {
+export function VisionTestForm({ userId }: { userId: string }) {
   const { toast } = useToast();
-  const [state, dispatch] = useFormState(createVisionRecord, initialState);
+  const createVisionRecordWithUserId = createVisionRecord.bind(null, userId);
+  const [state, dispatch] = useFormState(createVisionRecordWithUserId, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
@@ -42,15 +41,17 @@ export function VisionTestForm() {
   };
 
   useEffect(() => {
-    if (state.success && state.message) {
+    if (state.success) {
+        if(state.message) {
+            toast({
+                title: "Success",
+                description: state.message,
+            });
+        }
       formRef.current?.reset();
       setLeftDist('');
       setRightDist('');
-      toast({
-        title: "Success",
-        description: state.message,
-      });
-    } else if (!state.success && state.message) {
+    } else if (state.message) {
         toast({
             variant: "destructive",
             title: "Error",

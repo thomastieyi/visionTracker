@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "tutorial-step-1",
+      "description": "A person extending their arm forward holding a phone.",
+      "imageUrl": "https://images.unsplash.com/photo-1718804712146-610b7d7e3f93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhcm0lMjBwaG9uZXxlbnwwfHx8fDE3NjY0NTgxNTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "arm phone"
+    },
+    {
+      "id": "tutorial-step-2",
+      "description": "A person slowly moving their phone closer to their face.",
+      "imageUrl": "https://images.unsplash.com/photo-1609126778993-981e6fedef05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwaG9uZSUyMGZhY2V8ZW58MHx8fHwxNzY2NDU4MTU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "phone face"
+    },
+    {
+      "id": "tutorial-step-3",
+      "description": "A measuring tape showing the distance from the person's eye to the phone.",
+      "imageUrl": "https://images.unsplash.com/photo-1633009824205-51c01df4b577?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtZWFzdXJpbmclMjB0YXBlfGVufDB8fHx8MTc2NjQxMTA1OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "measuring tape"
+    },
+    {
+      "id": "tutorial-step-4",
+      "description": "A person entering the measured distance into the VisionTrack app.",
+      "imageUrl": "https://images.unsplash.com/photo-1738640679960-58d445857945?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhcHAlMjBpbnB1dHxlbnwwfHx8fDE3NjY0NTgxNTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "app input"
+    }
+  ]
 }

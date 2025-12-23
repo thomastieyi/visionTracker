@@ -18,7 +18,7 @@ export type FormState = {
     success?: boolean;
 };
 
-export async function createVisionRecord(prevState: FormState, formData: FormData): Promise<FormState> {
+export async function createVisionRecord(userId: string, prevState: FormState, formData: FormData): Promise<FormState> {
     const validatedFields = VisionTestSchema.safeParse({
         leftEyeDist: formData.get('leftEyeDist'),
         rightEyeDist: formData.get('rightEyeDist'),
@@ -38,13 +38,15 @@ export async function createVisionRecord(prevState: FormState, formData: FormDat
     const rightEyeDegree = 100 / rightEyeDist;
 
     try {
-        await addRecord({
+        await addRecord(userId, {
             leftEyeDist,
             rightEyeDist,
             leftEyeDegree,
             rightEyeDegree,
         });
     } catch (error) {
+        // In a real app, you'd want to inspect the error.
+        // For now, we'll keep it simple.
         return {
             message: 'Database Error: Failed to create record.',
             success: false,

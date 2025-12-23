@@ -1,50 +1,31 @@
+'use server';
+
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import type { VisionRecord } from './types';
+import { adminApp } from '@/firebase/admin';
 
-// In a real application, this would be a database.
-// For this demo, we use an in-memory array.
-const records: VisionRecord[] = [
-    {
-        id: '1',
-        leftEyeDist: 20,
-        rightEyeDist: 25,
-        leftEyeDegree: 5,
-        rightEyeDegree: 4,
-        measuredAt: new Date('2024-05-01T10:00:00Z'),
-    },
-    {
-        id: '2',
-        leftEyeDist: 22,
-        rightEyeDist: 26,
-        leftEyeDegree: 4.55,
-        rightEyeDegree: 3.85,
-        measuredAt: new Date('2024-06-15T11:30:00Z'),
-    },
-    {
-        id: '3',
-        leftEyeDist: 25,
-        rightEyeDist: 28,
-        leftEyeDegree: 4,
-        rightEyeDegree: 3.57,
-        measuredAt: new Date('2024-07-20T09:00:00Z'),
-    },
-];
 
-// Simulate network latency
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// This file now interacts with Firestore for data persistence.
+// The local in-memory array is no longer used.
 
-export async function getRecords(): Promise<VisionRecord[]> {
-  await delay(100);
-  // Return records sorted by date, newest first
-  return [...records].sort((a, b) => b.measuredAt.getTime() - a.measuredAt.getTime());
-}
+/**
+ * Adds a new vision record to the specified user's subcollection in Firestore.
+ * This is a server-side action.
+ */
+export async function addRecord(userId: string, data: Omit<VisionRecord, 'id' | 'measuredAt'>): Promise<void> {
+  if (!userId) {
+    throw new Error("User must be authenticated to add a record.");
+  }
+  
+  const firestore = getFirestore(adminApp);
+  const recordsCollection = collection(firestore, 'users', userId, 'records');
 
-export async function addRecord(data: Omit<VisionRecord, 'id' | 'measuredAt'>): Promise<VisionRecord> {
-  await delay(100);
-  const newRecord: VisionRecord = {
+  await addDoc(recordsCollection, {
     ...data,
-    id: crypto.randomUUID(),
-    measuredAt: new Date(),
-  };
-  records.unshift(newRecord); // Add to the beginning
-  return newRecord;
+    measuredAt: serverTimestamp(),
+  });
 }
+
+// The getRecords function is no longer needed on the server,
+// as data will be fetched directly on the client from Firestore.

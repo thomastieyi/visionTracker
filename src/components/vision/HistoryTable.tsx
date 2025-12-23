@@ -1,4 +1,5 @@
-import { getRecords } from '@/lib/data';
+'use client';
+import { useMemo } from 'react';
 import { format } from 'date-fns';
 import {
   Table,
@@ -16,9 +17,24 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { History } from 'lucide-react';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { useMemoFirebase } from '@/hooks/use-memo-firebase';
 
-export async function HistoryTable() {
-  const records = await getRecords();
+export function HistoryTable({ userId }: { userId: string }) {
+  const firestore = useFirestore();
+  const recordsQuery = useMemoFirebase(() => {
+    if (!firestore || !userId) return null;
+    return query(
+      collection(firestore, 'users', userId, 'records'),
+      orderBy('measuredAt', 'desc'),
+      limit(20)
+    );
+  }, [firestore, userId]);
+
+  const { data: records, isLoading } = useCollection(recordsQuery);
+
   return (
     <Card>
       <CardHeader>
@@ -43,11 +59,18 @@ export async function HistoryTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {records.length > 0 ? (
+              {isLoading && (
+                 <TableRow>
+                  <TableCell colSpan={5} className="text-center h-24">
+                    Loading history...
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && records && records.length > 0 ? (
                 records.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className="font-medium">
-                      {format(record.measuredAt, 'MMM d, yyyy')}
+                      {format(record.measuredAt.toDate(), 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell className="text-right">{record.leftEyeDist.toFixed(1)}</TableCell>
                     <TableCell className="text-right">{record.rightEyeDist.toFixed(1)}</TableCell>
@@ -59,7 +82,8 @@ export async function HistoryTable() {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : (
+              ) : null}
+              {!isLoading && (!records || records.length === 0) && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center h-24">
                     No records yet. Take your first test!
