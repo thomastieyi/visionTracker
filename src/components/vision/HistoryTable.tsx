@@ -1,5 +1,4 @@
 'use client';
-import { useMemo } from 'react';
 import { format } from 'date-fns';
 import {
   Table,
@@ -19,16 +18,19 @@ import {
 import { History } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-import { useMemoFirebase } from '@/hooks/use-memo-firebase';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 
-export function HistoryTable({ userId }: { userId: string }) {
+export function HistoryTable() {
   const firestore = useFirestore();
+  const { user } = useUser();
+  const userId = user?.uid;
+
   const recordsQuery = useMemoFirebase(() => {
     if (!firestore || !userId) return null;
+    // NOTE: The collection is 'visionTestResults' not 'records'
     return query(
-      collection(firestore, 'users', userId, 'records'),
-      orderBy('measuredAt', 'desc'),
+      collection(firestore, 'users', userId, 'visionTestResults'),
+      orderBy('testedAt', 'desc'),
       limit(20)
     );
   }, [firestore, userId]);
@@ -70,10 +72,10 @@ export function HistoryTable({ userId }: { userId: string }) {
                 records.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className="font-medium">
-                      {format(record.measuredAt.toDate(), 'MMM d, yyyy')}
+                      {format(record.testedAt.toDate(), 'MMM d, yyyy')}
                     </TableCell>
-                    <TableCell className="text-right">{record.leftEyeDist.toFixed(1)}</TableCell>
-                    <TableCell className="text-right">{record.rightEyeDist.toFixed(1)}</TableCell>
+                    <TableCell className="text-right">{record.leftEyeDistanceCm.toFixed(1)}</TableCell>
+                    <TableCell className="text-right">{record.rightEyeDistanceCm.toFixed(1)}</TableCell>
                     <TableCell className="text-right font-semibold text-primary">
                       {record.leftEyeDegree.toFixed(2)}
                     </TableCell>

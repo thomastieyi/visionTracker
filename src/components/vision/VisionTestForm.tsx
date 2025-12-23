@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Eye, PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"
+import { useUser } from '@/firebase';
 
 const initialState: FormState = { message: null, errors: {}, success: false };
 
@@ -22,10 +23,15 @@ function SubmitButton() {
   );
 }
 
-export function VisionTestForm({ userId }: { userId: string }) {
+export function VisionTestForm() {
+  const { user } = useUser();
+  const userId = user?.uid;
   const { toast } = useToast();
-  const createVisionRecordWithUserId = createVisionRecord.bind(null, userId);
-  const [state, dispatch] = useActionState(createVisionRecordWithUserId, initialState);
+  
+  // Bind userId only when it's available
+  const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
+  
+  const [state, dispatch] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [leftDist, setLeftDist] = useState<number | string>('');
@@ -59,6 +65,11 @@ export function VisionTestForm({ userId }: { userId: string }) {
         });
     }
   }, [state, toast]);
+  
+  if (!createVisionRecordWithUserId) {
+    // Optional: Render a disabled or loading state if userId is not yet available
+    return null;
+  }
 
   return (
     <Card>

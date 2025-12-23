@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { addRecord } from './data';
 import { revalidatePath } from 'next/cache';
+import { Timestamp } from 'firebase-admin/firestore';
 
 const VisionTestSchema = z.object({
   leftEyeDist: z.coerce.number().positive({ message: 'Distance must be a positive number.' }).max(500, { message: 'Distance seems too large for this estimation method.'}),
@@ -38,16 +39,17 @@ export async function createVisionRecord(userId: string, prevState: FormState, f
     const rightEyeDegree = 100 / rightEyeDist;
 
     try {
-        await addRecord(userId, {
-            leftEyeDist,
-            rightEyeDist,
-            leftEyeDegree,
-            rightEyeDegree,
-        });
+        const newRecord = {
+          userId,
+          leftEyeDistanceCm: leftEyeDist,
+          rightEyeDistanceCm: rightEyeDist,
+          leftEyeDegree: leftEyeDegree,
+          rightEyeDegree: rightEyeDegree,
+          testedAt: Timestamp.now(),
+        };
+        await addRecord(userId, newRecord);
     } catch (error) {
         console.error("Firebase Admin Error:", error);
-        // In a real app, you'd want to inspect the error.
-        // For now, we'll keep it simple.
         return {
             message: 'Database Error: Failed to create record.',
             success: false,
