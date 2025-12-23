@@ -38,8 +38,4 @@ function initializeAdminApp() {
 }
 
 // Initialize the app once at the module level.
-const adminApp = initializeAdminApp();
-
-// Create the db and auth instances once.
-export const adminDb: Firestore = getFirestore(adminApp);
-export const adminAuth: Auth = getAuth(adminApp);
+initializeAdminApp();

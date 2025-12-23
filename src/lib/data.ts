@@ -1,7 +1,31 @@
 'use server';
 
-import { Timestamp } from 'firebase-admin/firestore';
-import { adminDb } from '@/firebase/admin';
+import { Timestamp, getFirestore } from 'firebase-admin/firestore';
+import admin from 'firebase-admin';
+
+// Initialize the app if it's not already initialized
+if (admin.apps.length === 0) {
+    // When running in a Google Cloud environment (like App Hosting), the SDK is auto-initialized.
+    if (process.env.GOOGLE_CLOUD_PROJECT) {
+        admin.initializeApp();
+    } else {
+        const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+        if (!serviceAccountKey) {
+            throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set for local development.');
+        }
+        try {
+            const credentials = JSON.parse(serviceAccountKey);
+            admin.initializeApp({
+                credential: admin.credential.cert(credentials),
+            });
+        } catch (e) {
+            throw new Error('Failed to parse Firebase service account key.');
+        }
+    }
+}
+
+
+const adminDb = getFirestore();
 
 // This type should match the structure of the data you intend to save.
 // It uses the admin Timestamp.
@@ -20,7 +44,7 @@ type VisionTestResultPayload = {
  * Adds a new vision record to the specified user's subcollection in Firestore.
  * This is a server-side action using the Firebase Admin SDK.
  */
-export async function addRecord(userId: string, data: Omit<VisionTestResultPayload, 'id' | 'userId'>): Promise<void> {
+export async function addRecord(userId: string, data: Omit<VisionTestResultPayload, 'id' | 'userId'>) {
   if (!userId) {
     throw new Error("User must be authenticated to add a record.");
   }
