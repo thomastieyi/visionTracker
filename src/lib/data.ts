@@ -28,15 +28,16 @@ export async function addRecord(userId: string, data: Omit<VisionTestResultPaylo
     throw new Error("Failed to get a valid database instance.");
   }
   
-  // Use the adminDb instance to reference the collection and create a new document
   const recordsCollectionRef = adminDb.collection('users').doc(userId).collection('visionTestResults');
   const newRecordRef = recordsCollectionRef.doc();
 
   const fullData: VisionTestResultPayload = {
-    id: newRecordRef.id, // Add the generated ID to the document data
+    id: newRecordRef.id,
     userId: userId,
     ...data
   };
 
   await newRecordRef.set(fullData);
+  // Explicitly return to signal completion of the async function.
+  return;
 }
