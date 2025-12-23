@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"
 import { useUser } from '@/firebase';
+import { Separator } from '../ui/separator';
 
 const initialState: FormState = { message: null, errors: {}, success: false };
 
@@ -23,12 +24,31 @@ function SubmitButton() {
   );
 }
 
+function EyeChart() {
+    return (
+        <div className="flex flex-col items-center justify-center p-4 border-dashed border-2 rounded-lg h-full space-y-4 bg-secondary/50">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-16 h-16">
+                <path d="M80 20H20v15h45v10H20v10h45v10H20v10h45v15H20V20z" />
+            </svg>
+            <div className="text-center w-full space-y-2">
+                <p className="text-2xl font-bold">VisionTrack</p>
+                <p className="text-xl">Focus here</p>
+                <p className="text-lg">Read this line</p>
+                <p className="text-base">Can you see this?</p>
+                <p className="text-sm">How about this one?</p>
+                <p className="text-xs">And this tiny text?</p>
+            </div>
+            <Separator />
+             <p className="text-xs text-muted-foreground text-center">Move phone until text is sharp.</p>
+        </div>
+    )
+}
+
 export function VisionTestForm() {
   const { user } = useUser();
   const userId = user?.uid;
   const { toast } = useToast();
   
-  // Bind userId only when it's available
   const createVisionRecordWithUserId = userId ? createVisionRecord.bind(null, userId) : null;
   
   const [state, dispatch] = useActionState(createVisionRecordWithUserId || (async () => initialState), initialState);
@@ -67,7 +87,6 @@ export function VisionTestForm() {
   }, [state, toast]);
   
   if (!createVisionRecordWithUserId) {
-    // Optional: Render a disabled or loading state if userId is not yet available
     return null;
   }
 
@@ -83,45 +102,48 @@ export function VisionTestForm() {
         </CardDescription>
       </CardHeader>
       <form ref={formRef} action={dispatch}>
-        <CardContent className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="leftEyeDist">Left Eye Distance (cm)</Label>
-            <Input
-              id="leftEyeDist"
-              name="leftEyeDist"
-              type="number"
-              placeholder="e.g., 25"
-              step="0.1"
-              onChange={(e) => setLeftDist(e.target.value)}
-              aria-describedby="left-eye-error"
-              required
-            />
-            <p className="text-sm text-muted-foreground">
-              Calculated Degree: <span className="font-bold text-primary">{calculateDegree(leftDist)}</span>
-            </p>
-            {state.errors?.leftEyeDist && (
-              <p id="left-eye-error" className="text-sm font-medium text-destructive">{state.errors.leftEyeDist[0]}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rightEyeDist">Right Eye Distance (cm)</Label>
-            <Input
-              id="rightEyeDist"
-              name="rightEyeDist"
-              type="number"
-              placeholder="e.g., 30"
-              step="0.1"
-              onChange={(e) => setRightDist(e.target.value)}
-              aria-describedby="right-eye-error"
-              required
-            />
-            <p className="text-sm text-muted-foreground">
-              Calculated Degree: <span className="font-bold text-primary">{calculateDegree(rightDist)}</span>
-            </p>
-            {state.errors?.rightEyeDist && (
-              <p id="right-eye-error" className="text-sm font-medium text-destructive">{state.errors.rightEyeDist[0]}</p>
-            )}
-          </div>
+        <CardContent className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="leftEyeDist">Left Eye Distance (cm)</Label>
+                    <Input
+                    id="leftEyeDist"
+                    name="leftEyeDist"
+                    type="number"
+                    placeholder="e.g., 25"
+                    step="0.1"
+                    onChange={(e) => setLeftDist(e.target.value)}
+                    aria-describedby="left-eye-error"
+                    required
+                    />
+                    <p className="text-sm text-muted-foreground">
+                    Calculated Degree: <span className="font-bold text-primary">{calculateDegree(leftDist)}</span>
+                    </p>
+                    {state.errors?.leftEyeDist && (
+                    <p id="left-eye-error" className="text-sm font-medium text-destructive">{state.errors.leftEyeDist[0]}</p>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="rightEyeDist">Right Eye Distance (cm)</Label>
+                    <Input
+                    id="rightEyeDist"
+                    name="rightEyeDist"
+                    type="number"
+                    placeholder="e.g., 30"
+                    step="0.1"
+                    onChange={(e) => setRightDist(e.target.value)}
+                    aria-describedby="right-eye-error"
+                    required
+                    />
+                    <p className="text-sm text-muted-foreground">
+                    Calculated Degree: <span className="font-bold text-primary">{calculateDegree(rightDist)}</span>
+                    </p>
+                    {state.errors?.rightEyeDist && (
+                    <p id="right-eye-error" className="text-sm font-medium text-destructive">{state.errors.rightEyeDist[0]}</p>
+                    )}
+                </div>
+            </div>
+            <EyeChart />
         </CardContent>
         <CardFooter>
           <SubmitButton />
